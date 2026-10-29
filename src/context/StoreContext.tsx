@@ -12,6 +12,7 @@ import {
   UserRole
 } from '../types';
 import { soundNotifier } from '../utils/audio';
+import { syncBus } from '../utils/syncBus';
 
 const STORAGE_KEY = 'kopidesondoro_pos_state_v1';
 
@@ -98,15 +99,16 @@ const initialProducts: Product[] = [
     category_id: 'cat_manual',
     name: 'V60 Japanese Iced Drip',
     slug: 'v60-japanese-iced',
-    description: 'Seduhan manual V60 langsung menetes di atas es batu. Rasa floral, fruity, dan segar maksimal.',
+    description: 'Seduhan manual filter V60 dengan biji kopi single origin pilihan disajikan segar di atas es batu murni.',
     base_price: 28000,
     image_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&q=80',
     is_popular: false,
     is_available: true,
     is_active: true,
     variants: [
-      { id: 'v_3_bajawa', product_id: 'prod_3', name: 'Beans Flores Bajawa', price_adjustment: 0, is_default: true },
-      { id: 'v_3_gayo', product_id: 'prod_3', name: 'Beans Gayo Wine Anaerobic', price_adjustment: 6000, is_default: false },
+      { id: 'v_3_flores', product_id: 'prod_3', name: 'Beans Flores Bajawa', price_adjustment: 0, is_default: true },
+      { id: 'v_3_gayo', product_id: 'prod_3', name: 'Beans Aceh Gayo Wine', price_adjustment: 5000, is_default: false },
+      { id: 'v_3_ethiopia', product_id: 'prod_3', name: 'Beans Ethiopia Yirgacheffe', price_adjustment: 12000, is_default: false },
     ],
     addons: [],
   },
@@ -114,10 +116,10 @@ const initialProducts: Product[] = [
     id: 'prod_4',
     business_id: 'biz_sondoro_01',
     category_id: 'cat_noncoffee',
-    name: 'Matcha Uji Latte Artisanal',
-    slug: 'matcha-uji-latte',
-    description: 'Bubuk murni Matcha Uji Jepang kualitas ceremonial grade dikocok dengan susu dan gula tebu.',
-    base_price: 27000,
+    name: 'Artisan Matcha Latte Uji',
+    slug: 'matcha-latte-uji',
+    description: 'Bubuk matcha murni grade seremonial dari Kyoto berpadu steamed milk gurih dan vanila.',
+    base_price: 28000,
     image_url: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=500&q=80',
     is_popular: true,
     is_available: true,
@@ -127,7 +129,7 @@ const initialProducts: Product[] = [
       { id: 'v_4_hot', product_id: 'prod_4', name: 'Hot Hangat', price_adjustment: 0, is_default: false },
     ],
     addons: [
-      { id: 'a_4_oat', product_id: 'prod_4', name: 'Upgrade Oat Milk', price: 6000, max_quantity: 1, is_active: true },
+      { id: 'a_4_boba', product_id: 'prod_4', name: 'Brown Sugar Boba', price: 4000, max_quantity: 2, is_active: true },
     ],
   },
   {
@@ -135,8 +137,8 @@ const initialProducts: Product[] = [
     business_id: 'biz_sondoro_01',
     category_id: 'cat_food',
     name: 'Nasi Goreng Kecombrang Sondoro',
-    slug: 'nasi-goreng-kecombrang',
-    description: 'Nasi goreng harum aroma bunga kecombrang segar dengan suwiran ayam gurih, acar, dan kerupuk.',
+    slug: 'nasgor-kecombrang',
+    description: 'Nasi goreng harum rempah bunga kecombrang dengan suwiran ayam gurih, acar segar, dan kerupuk udang.',
     base_price: 34000,
     image_url: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500&q=80',
     is_popular: true,
@@ -144,51 +146,48 @@ const initialProducts: Product[] = [
     is_active: true,
     variants: [
       { id: 'v_5_med', product_id: 'prod_5', name: 'Pedas Sedang', price_adjustment: 0, is_default: true },
-      { id: 'v_5_hot', product_id: 'prod_5', name: 'Pedas Nendang', price_adjustment: 1000, is_default: false },
-      { id: 'v_5_mild', product_id: 'prod_5', name: 'Tidak Pedas', price_adjustment: 0, is_default: false },
+      { id: 'v_5_pedas', product_id: 'prod_5', name: 'Pedas Gila (Cabai Rawit 10)', price_adjustment: 2000, is_default: false },
     ],
     addons: [
       { id: 'a_5_egg', product_id: 'prod_5', name: 'Telur Ceplok Setengah Matang', price: 5000, max_quantity: 2, is_active: true },
-      { id: 'a_5_ayam', product_id: 'prod_5', name: 'Ekstra Suwiran Ayam', price: 8000, max_quantity: 2, is_active: true },
+      { id: 'a_5_sate', product_id: 'prod_5', name: 'Sate Lilit Ayam (2 Tusuk)', price: 12000, max_quantity: 2, is_active: true },
     ],
   },
   {
     id: 'prod_6',
     business_id: 'biz_sondoro_01',
     category_id: 'cat_food',
-    name: 'Mie Ayam Rica Jamur Kancing',
-    slug: 'mie-ayam-rica-jamur',
-    description: 'Mie kenyal buatan sendiri disajikan dengan bumbu rica pedas gurih, jamur kancing, dan kuah kaldu.',
-    base_price: 29000,
-    image_url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&q=80',
+    name: 'Spaghetti Smoked Beef Aglio Olio',
+    slug: 'spaghetti-aglio-olio',
+    description: 'Pasta al dente ditumis dengan minyak zaitun extra virgin, bawang putih renyah, cabai kering, dan smoked beef gurih.',
+    base_price: 36000,
+    image_url: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80',
     is_popular: false,
     is_available: true,
     is_active: true,
     variants: [
-      { id: 'v_6_kuah', product_id: 'prod_6', name: 'Kuah Terpisah', price_adjustment: 0, is_default: true },
-      { id: 'v_6_kering', product_id: 'prod_6', name: 'Mie Kering / Yamien', price_adjustment: 0, is_default: false },
+      { id: 'v_6_std', product_id: 'prod_6', name: 'Porsi Standar', price_adjustment: 0, is_default: true },
     ],
     addons: [
-      { id: 'a_6_pangsit', product_id: 'prod_6', name: 'Pangsit Goreng Crispy (2 pcs)', price: 6000, max_quantity: 3, is_active: true },
+      { id: 'a_6_parm', product_id: 'prod_6', name: 'Extra Keju Parmesan', price: 5000, max_quantity: 2, is_active: true },
     ],
   },
   {
     id: 'prod_7',
     business_id: 'biz_sondoro_01',
     category_id: 'cat_snack',
-    name: 'Pisang Goreng Madu Karamel Wijen',
-    slug: 'pisang-goreng-madu',
-    description: 'Pisang kepok manis digoreng renyah dengan balutan madu murni dan taburan wijen sangrai gurih.',
-    base_price: 22000,
-    image_url: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&q=80',
+    name: 'Cireng Krispi Bumbu Rujak',
+    slug: 'cireng-rujak',
+    description: 'Cireng tepung tapioka renyah di luar kenyal di dalam, disajikan dengan saus rujak asam manis pedas legit.',
+    base_price: 18000,
+    image_url: 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=500&q=80',
     is_popular: true,
     is_available: true,
     is_active: true,
-    variants: [],
-    addons: [
-      { id: 'a_7_cheese', product_id: 'prod_7', name: 'Taburan Keju Cheddar', price: 4000, max_quantity: 1, is_active: true },
-      { id: 'a_7_choco', product_id: 'prod_7', name: 'Cokelat Meises', price: 3000, max_quantity: 1, is_active: true },
+    variants: [
+      { id: 'v_7_std', product_id: 'prod_7', name: 'Isi 10 Pcs', price_adjustment: 0, is_default: true },
     ],
+    addons: [],
   },
   {
     id: 'prod_8',
@@ -196,13 +195,16 @@ const initialProducts: Product[] = [
     category_id: 'cat_snack',
     name: 'Croissant Butter Perancis',
     slug: 'croissant-butter',
-    description: 'Pastry renyah berlapis dengan aroma mentega Perancis murni, dihangatkan sebelum disajikan.',
+    description: 'Pastry mentega impor berlayer renyah keemasan, dipanggang fresh setiap pagi hari.',
     base_price: 24000,
     image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=500&q=80',
     is_popular: false,
     is_available: true,
     is_active: true,
-    variants: [],
+    variants: [
+      { id: 'v_8_orig', product_id: 'prod_8', name: 'Original Butter', price_adjustment: 0, is_default: true },
+      { id: 'v_8_almond', product_id: 'prod_8', name: 'Almond Cream Topping', price_adjustment: 8000, is_default: false },
+    ],
     addons: [],
   },
 ];
@@ -216,14 +218,13 @@ const initialOrders: Order[] = [
     order_number: 'ORD-101',
     access_token: 'tok_ord_101_xyz',
     customer_name: 'Budi Santoso',
-    customer_notes: 'Kopi jangan terlalu manis ya mas.',
     fulfillment_status: 'pending',
     payment_status: 'unpaid',
-    subtotal: 56000,
+    subtotal: 64000,
     discount_amount: 0,
-    tax_amount: 5600,
-    service_amount: 2800,
-    total_amount: 64400,
+    tax_amount: 6400,
+    service_amount: 3200,
+    total_amount: 73600,
     created_at: new Date(Date.now() - 4 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 4 * 60 * 1000).toISOString(),
     items: [
@@ -340,6 +341,7 @@ interface StoreContextType {
   cart: CartItem[];
   activeView: 'customer' | 'pos' | 'kds' | 'admin' | 'receipt_preview';
   activeReceiptOrder: Order | null;
+  lastLiveMessage: string | null;
   setActiveRole: (role: UserRole) => void;
   setActiveView: (view: 'customer' | 'pos' | 'kds' | 'admin' | 'receipt_preview') => void;
   setCurrentTable: (table: TableItem | null) => void;
@@ -417,7 +419,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       business_id: 'biz_sondoro_01',
       cashier_id: 'usr_cashier_1',
       cashier_name: 'Kasir Utama',
-      start_cash: 500000, // Rp 500.000 modal awal
+      start_cash: 500000,
       expected_cash: 500000,
       status: 'open',
       opened_at: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
@@ -427,11 +429,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // UI state
   const [activeRole, setActiveRole] = useState<UserRole>('cashier');
   const [activeView, setActiveView] = useState<'customer' | 'pos' | 'kds' | 'admin' | 'receipt_preview'>('customer');
-  const [currentTable, setCurrentTable] = useState<TableItem | null>(tables[1]); // Default to Meja 02
+  const [currentTable, setCurrentTable] = useState<TableItem | null>(tables[1]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeReceiptOrder, setActiveReceiptOrder] = useState<Order | null>(null);
+  const [lastLiveMessage, setLastLiveMessage] = useState<string | null>(null);
 
-  // Sync to localStorage
+  // Sync state to localStorage
   useEffect(() => {
     const state = {
       business,
@@ -445,15 +448,95 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
-      // Storage quota exceeded fallback
+      // Storage quota fallback
     }
   }, [business, tables, categories, products, orders, payments, currentShift]);
+
+  // 1. REAL-TIME SYNCHRONIZATION LISTENER (Cross-Tab / Cross-Window)
+  useEffect(() => {
+    const unsubscribe = syncBus.subscribe((msg) => {
+      if (msg.type === 'ORDER_CREATED') {
+        const { order, tables: updatedTables } = msg.payload;
+        if (order) {
+          setOrders((prev) => {
+            if (prev.some((o) => o.id === order.id)) return prev;
+            soundNotifier.playNewOrderChime();
+            setLastLiveMessage(`🔔 Pesanan Baru Masuk: ${order.order_number} dari Meja ${order.table_number}!`);
+            setTimeout(() => setLastLiveMessage(null), 6000);
+            return [order, ...prev];
+          });
+        }
+        if (updatedTables) setTables(updatedTables);
+      } else if (msg.type === 'ORDER_STATUS_CHANGED') {
+        const { orderId, status } = msg.payload;
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, fulfillment_status: status, updated_at: new Date().toISOString() } : o))
+        );
+        soundNotifier.playSuccessPing();
+      } else if (msg.type === 'ORDER_PAID') {
+        const { orderId, payment, updatedShift } = msg.payload;
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, payment_status: 'paid', updated_at: new Date().toISOString() } : o))
+        );
+        if (payment) setPayments((prev) => [payment, ...prev]);
+        if (updatedShift) setCurrentShift(updatedShift);
+        soundNotifier.playSuccessPing();
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // 2. CLOUD KV BACKGROUND SYNC (Cross-Device: Smartphone to PC)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const pollCloudState = async () => {
+      try {
+        const res = await fetch('/api/sync', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.orders && Array.isArray(data.orders)) {
+          setOrders((currentOrders) => {
+            const currentIds = new Set(currentOrders.map((o) => o.id));
+            const newOrdersFromCloud = data.orders.filter((o: Order) => !currentIds.has(o.id));
+            if (newOrdersFromCloud.length > 0) {
+              soundNotifier.playNewOrderChime();
+              setLastLiveMessage(`🔔 ${newOrdersFromCloud.length} Pesanan Baru Diterima dari Cloud!`);
+              setTimeout(() => setLastLiveMessage(null), 5000);
+              return [...newOrdersFromCloud, ...currentOrders];
+            }
+            return currentOrders;
+          });
+        }
+      } catch {
+        // network fallback
+      }
+    };
+
+    const interval = setInterval(pollCloudState, 3500);
+    return () => clearInterval(interval);
+  }, []);
+
+  const pushToCloud = (updatedOrders: Order[], updatedTables?: TableItem[]) => {
+    try {
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orders: updatedOrders,
+          tables: updatedTables || tables,
+          business,
+          products,
+        }),
+      }).catch(() => {});
+    } catch {}
+  };
 
   // Cart operations
   const addToCart = (newItem: CartItem) => {
     soundNotifier.playSuccessPing();
     setCart((prev) => {
-      // Check if identical item already exists (same product, variant, addons, notes)
       const existingIdx = prev.findIndex(
         (it) =>
           it.product.id === newItem.product.id &&
@@ -510,7 +593,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   ): Promise<Order> => {
     const targetTable = tables.find((t) => t.id === tableId) || tables[0];
 
-    // Calculate verified prices from catalog (never trust browser total)
     let verifiedSubtotal = 0;
     const orderItems = cart.map((cItem, idx) => {
       const liveProduct = products.find((p) => p.id === cItem.product.id) || cItem.product;
@@ -518,14 +600,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (cItem.selected_variant) {
         unitPrice += cItem.selected_variant.price_adjustment;
       }
-      const addonSnapshots = cItem.selected_addons.map((a, aIdx) => {
-        return {
-          id: `ord_addon_${Date.now()}_${aIdx}`,
-          addon_name: a.name,
-          price: a.price,
-          quantity: a.quantity,
-        };
-      });
+      const addonSnapshots = cItem.selected_addons.map((a, aIdx) => ({
+        id: `ord_addon_${Date.now()}_${aIdx}`,
+        addon_name: a.name,
+        price: a.price,
+        quantity: a.quantity,
+      }));
       const addonTotal = addonSnapshots.reduce((acc, a) => acc + a.price * a.quantity, 0);
       const totalItemUnit = unitPrice + addonTotal;
       const itemSubtotal = totalItemUnit * cItem.quantity;
@@ -574,13 +654,22 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updated_at: new Date().toISOString(),
     };
 
-    // Update state & notify
-    setOrders((prev) => [newOrder, ...prev]);
-    setTables((prev) =>
-      prev.map((t) => (t.id === targetTable.id ? { ...t, status: 'occupied' } : t))
-    );
+    const nextOrders = [newOrder, ...orders];
+    const nextTables = tables.map((t) => (t.id === targetTable.id ? { ...t, status: 'occupied' as const } : t));
+
+    setOrders(nextOrders);
+    setTables(nextTables);
     clearCart();
     soundNotifier.playNewOrderChime();
+
+    // Broadcast in real-time to Kasir POS, Kitchen KDS, and Admin!
+    syncBus.broadcast('ORDER_CREATED', {
+      order: newOrder,
+      tables: nextTables,
+    });
+
+    // Cloud push
+    pushToCloud(nextOrders, nextTables);
 
     return newOrder;
   };
@@ -649,18 +738,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updated_at: new Date().toISOString(),
     };
 
-    setOrders((prev) => [newOrder, ...prev]);
-    setTables((prev) =>
-      prev.map((t) => (t.id === targetTable.id ? { ...t, status: 'occupied' } : t))
-    );
+    const nextOrders = [newOrder, ...orders];
+    const nextTables = tables.map((t) => (t.id === targetTable.id ? { ...t, status: 'occupied' as const } : t));
+
+    setOrders(nextOrders);
+    setTables(nextTables);
     soundNotifier.playNewOrderChime();
+
+    syncBus.broadcast('ORDER_CREATED', {
+      order: newOrder,
+      tables: nextTables,
+    });
+    pushToCloud(nextOrders, nextTables);
+
     return newOrder;
   };
 
   const updateOrderStatus = (orderId: string, status: FulfillmentStatus) => {
     soundNotifier.playSuccessPing();
-    setOrders((prev) =>
-      prev.map((ord) => {
+    let updatedOrders: Order[] = [];
+    setOrders((prev) => {
+      updatedOrders = prev.map((ord) => {
         if (ord.id === orderId) {
           return {
             ...ord,
@@ -669,13 +767,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           };
         }
         return ord;
-      })
-    );
+      });
+      return updatedOrders;
+    });
+
+    syncBus.broadcast('ORDER_STATUS_CHANGED', { orderId, status });
+    pushToCloud(updatedOrders);
   };
 
   const cancelOrder = (orderId: string, reason?: string) => {
-    setOrders((prev) =>
-      prev.map((ord) => {
+    let updatedOrders: Order[] = [];
+    setOrders((prev) => {
+      updatedOrders = prev.map((ord) => {
         if (ord.id === orderId) {
           return {
             ...ord,
@@ -685,8 +788,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           };
         }
         return ord;
-      })
-    );
+      });
+      return updatedOrders;
+    });
+
+    syncBus.broadcast('ORDER_STATUS_CHANGED', { orderId, status: 'cancelled' });
+    pushToCloud(updatedOrders);
   };
 
   const processPayment = (
@@ -713,26 +820,30 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       created_at: new Date().toISOString(),
     };
 
-    // Mark order paid
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, payment_status: 'paid', updated_at: new Date().toISOString() } : o))
-    );
+    const nextOrders = orders.map((o) => (o.id === orderId ? { ...o, payment_status: 'paid' as const, updated_at: new Date().toISOString() } : o));
+    const nextPayments = [payment, ...payments];
 
-    setPayments((prev) => [payment, ...prev]);
+    setOrders(nextOrders);
+    setPayments(nextPayments);
 
-    // Update shift drawer if cash
+    let nextShift = currentShift;
     if (method === 'cash' && currentShift && currentShift.status === 'open') {
-      setCurrentShift((prev) =>
-        prev
-          ? {
-              ...prev,
-              expected_cash: prev.expected_cash + targetOrder.total_amount,
-            }
-          : null
-      );
+      nextShift = {
+        ...currentShift,
+        expected_cash: currentShift.expected_cash + targetOrder.total_amount,
+      };
+      setCurrentShift(nextShift);
     }
 
     soundNotifier.playSuccessPing();
+
+    syncBus.broadcast('ORDER_PAID', {
+      orderId,
+      payment,
+      updatedShift: nextShift,
+    });
+    pushToCloud(nextOrders);
+
     return payment;
   };
 
@@ -856,6 +967,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         cart,
         activeView,
         activeReceiptOrder,
+        lastLiveMessage,
         setActiveRole,
         setActiveView,
         setCurrentTable,

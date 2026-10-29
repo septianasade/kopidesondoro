@@ -8,6 +8,7 @@ import { AdminDashboardView } from './views/AdminDashboardView';
 import { StaffLoginPage } from './views/StaffLoginPage';
 import { StaffHeader } from './components/StaffHeader';
 import { ReceiptModal } from './components/ReceiptModal';
+import { ShieldAlert, BellRing } from 'lucide-react';
 
 type AppRoute = 'customer' | 'admin' | 'pos' | 'kds';
 
@@ -24,8 +25,8 @@ function resolveRouteFromUrl(): AppRoute {
 
 const AppRouter: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(resolveRouteFromUrl());
-  const { isAuthenticated, currentUser } = useAuth();
-  const { tables, setCurrentTable, activeReceiptOrder, showReceiptForOrder } = useStore();
+  const { isAuthenticated, currentUser, logout } = useAuth();
+  const { tables, setCurrentTable, activeReceiptOrder, showReceiptForOrder, lastLiveMessage } = useStore();
 
   // Listen to browser navigation changes
   useEffect(() => {
@@ -63,11 +64,19 @@ const AppRouter: React.FC = () => {
     setCurrentRoute(route);
   };
 
-  // 1. Customer Route: Completely Clean Customer Experience
+  // 1. Customer Route: Pure Customer Experience (Zero Staff UI)
   if (currentRoute === 'customer') {
     return (
-      <div className="min-h-screen bg-stone-50 flex flex-col">
+      <div className="min-h-screen bg-stone-50 flex flex-col relative">
         <CustomerOrderingView />
+
+        {/* Real-time Order Sync Notification Banner */}
+        {lastLiveMessage && (
+          <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-amber-300 font-bold px-5 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 border border-amber-500/50 animate-bounce">
+            <BellRing className="w-4 h-4 text-amber-400 animate-pulse" />
+            <span className="text-xs sm:text-sm">{lastLiveMessage}</span>
+          </div>
+        )}
 
         {activeReceiptOrder && (
           <ReceiptModal
@@ -79,67 +88,111 @@ const AppRouter: React.FC = () => {
     );
   }
 
-  // 2. Staff Routes: Requires Login
+  // 2. Staff Routes: Requires Authentication
   if (!isAuthenticated) {
-    const portalName =
-      currentRoute === 'admin'
-        ? 'Dashboard Administrator & Owner'
-        : currentRoute === 'pos'
-        ? 'Terminal Kasir & Transaksi POS'
-        : 'Kitchen Display System (KDS Dapur)';
-
     return (
       <StaffLoginPage
-        targetPortalName={portalName}
+        expectedRole={currentRoute as 'admin' | 'pos' | 'kds'}
         onSuccess={() => {}}
         onBackToCustomer={() => navigateTo('customer')}
       />
     );
   }
 
-  // Check RBAC permissions
-  const canAccessAdmin = currentUser?.role === 'admin' || currentUser?.role === 'owner';
-  const canAccessPos = canAccessAdmin || currentUser?.role === 'cashier';
-  const canAccessKds = canAccessAdmin || currentUser?.role === 'kitchen';
+  // 3. Strict Role-Based Access Control (RBAC) Guard
+  const userRole = currentUser?.role;
+  const isAdmin = userRole === 'admin' || userRole === 'owner';
+  const isCashier = userRole === 'cashier';
+  const isKitchen = userRole === 'kitchen';
+
+  // Guard: Cashier trying to open admin or kitchen
+  if (isCashier && currentRoute !== 'pos') {
+    return (
+      <div className="min-h-screen bg-stone-900 text-stone-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-stone-800 border border-rose-500/50 rounded-2xl p-6 text-center shadow-2xl">
+          <div className="w-16 h-16 rounded-full bg-rose-500/20 text-rose-400 mx-auto flex items-center justify-center mb-4">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Akses Dilarang (403 Forbidden)</h2>
+          <p className="text-sm text-stone-400 mb-6">
+            Akun Anda terdaftar sebagai <strong className="text-emerald-400">Kasir</strong>. Anda tidak memiliki izin untuk membuka {currentRoute === 'admin' ? 'Dashboard Admin' : 'Layar Dapur'}.
+          </p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => navigateTo('pos')}
+              className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm transition"
+            >
+              Kembali ke Terminal Kasir POS
+            </button>
+            <button
+              onClick={() => {
+                logout();
+                navigateTo('customer');
+              }}
+              className="w-full py-2 px-4 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium rounded-xl text-xs transition"
+            >
+              Keluar Akun
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Guard: Kitchen trying to open admin or cashier
+  if (isKitchen && currentRoute !== 'kds') {
+    return (
+      <div className="min-h-screen bg-stone-900 text-stone-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-stone-800 border border-rose-500/50 rounded-2xl p-6 text-center shadow-2xl">
+          <div className="w-16 h-16 rounded-full bg-rose-500/20 text-rose-400 mx-auto flex items-center justify-center mb-4">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Akses Dilarang (403 Forbidden)</h2>
+          <p className="text-sm text-stone-400 mb-6">
+            Akun Anda terdaftar sebagai <strong className="text-amber-400">Tim Dapur</strong>. Anda tidak memiliki izin untuk membuka {currentRoute === 'admin' ? 'Dashboard Admin' : 'Terminal Kasir'}.
+          </p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => navigateTo('kds')}
+              className="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold rounded-xl text-sm transition"
+            >
+              Kembali ke Layar Dapur KDS
+            </button>
+            <button
+              onClick={() => {
+                logout();
+                navigateTo('customer');
+              }}
+              className="w-full py-2 px-4 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium rounded-xl text-xs transition"
+            >
+              Keluar Akun
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col">
+    <div className="min-h-screen bg-stone-100 flex flex-col relative">
       <StaffHeader
         currentPortal={currentRoute as 'admin' | 'pos' | 'kds'}
         onNavigate={(p) => navigateTo(p)}
         onExitToCustomer={() => navigateTo('customer')}
       />
 
+      {/* Real-time Order Sync Notification Banner for Staff */}
+      {lastLiveMessage && (
+        <div className="fixed top-20 right-6 z-50 bg-emerald-600 text-white font-bold px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-emerald-300 animate-bounce">
+          <BellRing className="w-5 h-5 text-amber-300 animate-spin" />
+          <span className="text-xs sm:text-sm">{lastLiveMessage}</span>
+        </div>
+      )}
+
       <main className="flex-1">
-        {currentRoute === 'admin' && (
-          canAccessAdmin ? (
-            <AdminDashboardView />
-          ) : (
-            <div className="p-8 text-center text-rose-600 font-bold">
-              Akses ditolak: Akun kasir/dapur tidak memiliki izin ke Dashboard Admin.
-            </div>
-          )
-        )}
-
-        {currentRoute === 'pos' && (
-          canAccessPos ? (
-            <PosCashierView />
-          ) : (
-            <div className="p-8 text-center text-rose-600 font-bold">
-              Akses ditolak: Akun dapur tidak memiliki izin ke Kasir POS.
-            </div>
-          )
-        )}
-
-        {currentRoute === 'kds' && (
-          canAccessKds ? (
-            <KitchenDisplayView />
-          ) : (
-            <div className="p-8 text-center text-rose-600 font-bold">
-              Akses ditolak: Akun Anda tidak memiliki izin ke Layar Dapur.
-            </div>
-          )
-        )}
+        {currentRoute === 'admin' && isAdmin && <AdminDashboardView />}
+        {currentRoute === 'pos' && (isAdmin || isCashier) && <PosCashierView />}
+        {currentRoute === 'kds' && (isAdmin || isKitchen) && <KitchenDisplayView />}
       </main>
 
       {activeReceiptOrder && (

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
-import { Coffee, Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowLeft, KeyRound } from 'lucide-react';
+import { Coffee, Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowLeft, KeyRound, AlertTriangle } from 'lucide-react';
 
 interface Props {
-  targetPortalName?: string;
+  expectedRole?: 'admin' | 'pos' | 'kds';
   onSuccess: () => void;
   onBackToCustomer: () => void;
 }
 
 export const StaffLoginPage: React.FC<Props> = ({ 
-  targetPortalName = 'Portal Staf & Manajemen', 
+  expectedRole = 'admin',
   onSuccess,
   onBackToCustomer 
 }) => {
@@ -23,6 +23,26 @@ export const StaffLoginPage: React.FC<Props> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const validateRoleAccess = (userRole: string): boolean => {
+    if (expectedRole === 'admin') {
+      if (userRole !== 'admin' && userRole !== 'owner') {
+        setErrorMessage('⛔ Akses Ditolak: Hanya Admin/Owner yang diizinkan masuk ke Dashboard Admin.');
+        return false;
+      }
+    } else if (expectedRole === 'pos') {
+      if (userRole !== 'cashier' && userRole !== 'admin' && userRole !== 'owner') {
+        setErrorMessage('⛔ Akses Ditolak: Akun Dapur tidak memiliki hak akses ke Terminal Kasir POS.');
+        return false;
+      }
+    } else if (expectedRole === 'kds') {
+      if (userRole !== 'kitchen' && userRole !== 'admin' && userRole !== 'owner') {
+        setErrorMessage('⛔ Akses Ditolak: Akun Kasir tidak memiliki hak akses ke Layar Dapur KDS.');
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
@@ -31,10 +51,12 @@ export const StaffLoginPage: React.FC<Props> = ({
     setTimeout(() => {
       const res = login(email, password);
       setIsLoading(false);
-      if (res.success) {
-        onSuccess();
+      if (res.success && res.user) {
+        if (validateRoleAccess(res.user.role)) {
+          onSuccess();
+        }
       } else {
-        setErrorMessage(res.error || 'Autentikasi gagal.');
+        setErrorMessage(res.error || 'Autentikasi gagal. Periksa email dan password.');
       }
     }, 250);
   };
@@ -43,10 +65,21 @@ export const StaffLoginPage: React.FC<Props> = ({
     setEmail(quickEmail);
     setPassword(quickPass);
     const res = login(quickEmail, quickPass);
-    if (res.success) {
-      onSuccess();
+    if (res.success && res.user) {
+      if (validateRoleAccess(res.user.role)) {
+        onSuccess();
+      }
+    } else {
+      setErrorMessage(res.error || 'Login gagal.');
     }
   };
+
+  const portalAccent = 
+    expectedRole === 'pos'
+      ? { title: 'Terminal Kasir (POS)', badge: 'PORTAL KASIR', color: 'from-emerald-500 to-teal-700', border: 'border-emerald-500/40', text: 'text-emerald-400' }
+      : expectedRole === 'kds'
+      ? { title: 'Layar Dapur & Barista (KDS)', badge: 'PORTAL DAPUR', color: 'from-amber-500 to-orange-700', border: 'border-amber-500/40', text: 'text-amber-400' }
+      : { title: 'Dashboard Administrator & Owner', badge: 'PORTAL ADMIN', color: 'from-brand-500 to-stone-800', border: 'border-brand-500/40', text: 'text-brand-400' };
 
   return (
     <div className="min-h-screen bg-stone-900 text-stone-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -68,11 +101,14 @@ export const StaffLoginPage: React.FC<Props> = ({
 
         {/* Brand Header */}
         <div className="text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-brand-700 mx-auto flex items-center justify-center shadow-lg shadow-brand-900/50 mb-3">
+          <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${portalAccent.color} mx-auto flex items-center justify-center shadow-lg shadow-black/40 mb-3`}>
             <Coffee className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-2xl font-black tracking-tight text-white">{business.name}</h2>
-          <p className="text-xs text-stone-400 mt-1">{targetPortalName}</p>
+          <span className={`text-[10px] uppercase font-extrabold tracking-widest px-2.5 py-1 rounded-md bg-stone-800 border ${portalAccent.border} ${portalAccent.text}`}>
+            {portalAccent.badge}
+          </span>
+          <h2 className="text-2xl font-black tracking-tight text-white mt-2">{business.name}</h2>
+          <p className="text-xs text-stone-400 mt-1">{portalAccent.title}</p>
         </div>
 
         {/* Login Form Box */}
@@ -81,22 +117,28 @@ export const StaffLoginPage: React.FC<Props> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-semibold animate-fade-in flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 flex-shrink-0" />
+              <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-semibold animate-fade-in flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-400 mb-1.5">
-                Email / Username Staf
+                Email / Username Akun
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-stone-500 absolute left-3.5 top-3" />
                 <input
                   type="text"
                   required
-                  placeholder="admin@sondoro.com"
+                  placeholder={
+                    expectedRole === 'pos' 
+                      ? 'kasir@sondoro.com' 
+                      : expectedRole === 'kds' 
+                      ? 'dapur@sondoro.com' 
+                      : 'admin@sondoro.com'
+                  }
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-stone-900/80 text-white placeholder-stone-600 text-xs sm:text-sm pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500 transition"
@@ -134,48 +176,68 @@ export const StaffLoginPage: React.FC<Props> = ({
               className="w-full mt-2 bg-brand-600 hover:bg-brand-500 active:scale-[0.99] text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-brand-600/30 transition flex items-center justify-center gap-2 text-xs sm:text-sm disabled:opacity-50"
             >
               <KeyRound className="w-4 h-4" />
-              <span>{isLoading ? 'Memverifikasi...' : 'Masuk ke Sistem'}</span>
+              <span>{isLoading ? 'Memverifikasi...' : `Masuk ke ${portalAccent.title}`}</span>
             </button>
           </form>
 
-          {/* Quick Demo Login Preset Buttons */}
+          {/* Dedicated Role Login Pill */}
           <div className="mt-6 pt-5 border-t border-stone-700/80">
             <p className="text-[11px] font-bold text-stone-400 uppercase tracking-wider text-center mb-3">
-              ⚡ Akun Uji Coba Cepat (1-Klik Masuk)
+              ⚡ Akun Resmi untuk Portal Ini
             </p>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('admin@sondoro.com', 'admin123')}
-                className="p-2 rounded-xl bg-stone-900/80 hover:bg-stone-700/80 border border-stone-700 text-center transition flex flex-col items-center gap-1"
-              >
-                <span className="text-xs font-bold text-amber-400">Owner</span>
-                <span className="text-[10px] text-stone-400">admin123</span>
-              </button>
+            
+            {expectedRole === 'pos' && (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('kasir@sondoro.com', 'kasir123')}
+                  className="w-full p-2.5 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/40 text-center transition flex items-center justify-between px-4"
+                >
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-emerald-400">Kasir POS (Utama)</p>
+                    <p className="text-[10px] text-stone-400">kasir@sondoro.com</p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded">kasir123</span>
+                </button>
+              </div>
+            )}
 
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('kasir@sondoro.com', 'kasir123')}
-                className="p-2 rounded-xl bg-stone-900/80 hover:bg-stone-700/80 border border-stone-700 text-center transition flex flex-col items-center gap-1"
-              >
-                <span className="text-xs font-bold text-emerald-400">Kasir</span>
-                <span className="text-[10px] text-stone-400">kasir123</span>
-              </button>
+            {expectedRole === 'kds' && (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('dapur@sondoro.com', 'dapur123')}
+                  className="w-full p-2.5 rounded-xl bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 text-center transition flex items-center justify-between px-4"
+                >
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-amber-400">Staf Dapur / Barista</p>
+                    <p className="text-[10px] text-stone-400">dapur@sondoro.com</p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-amber-300 bg-amber-900/60 px-2 py-0.5 rounded">dapur123</span>
+                </button>
+              </div>
+            )}
 
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('dapur@sondoro.com', 'dapur123')}
-                className="p-2 rounded-xl bg-stone-900/80 hover:bg-stone-700/80 border border-stone-700 text-center transition flex flex-col items-center gap-1"
-              >
-                <span className="text-xs font-bold text-brand-400">Dapur</span>
-                <span className="text-[10px] text-stone-400">dapur123</span>
-              </button>
-            </div>
+            {expectedRole === 'admin' && (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('admin@sondoro.com', 'admin123')}
+                  className="w-full p-2.5 rounded-xl bg-brand-950/40 hover:bg-brand-900/50 border border-brand-500/40 text-center transition flex items-center justify-between px-4"
+                >
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-brand-400">Administrator & Owner</p>
+                    <p className="text-[10px] text-stone-400">admin@sondoro.com</p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-brand-300 bg-brand-900/60 px-2 py-0.5 rounded">admin123</span>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-stone-500">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Terproteksi Autentikasi Staf Berbasis Peran</span>
+            <span>Hak Akses Terisolasi — Kasir & Dapur Terpisah Penuh</span>
           </div>
 
         </div>

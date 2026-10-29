@@ -11,7 +11,7 @@ export interface AuthUser {
 interface AuthContextType {
   currentUser: AuthUser | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => { success: boolean; error?: string };
+  login: (email: string, password: string) => { success: boolean; user?: AuthUser; error?: string };
   logout: () => void;
 }
 
@@ -61,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [currentUser]);
 
-  const login = (email: string, password: string): { success: boolean; error?: string } => {
+  const login = (email: string, password: string): { success: boolean; user?: AuthUser; error?: string } => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = password.trim();
 
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: matched.role,
       };
       setCurrentUser(user);
-      return { success: true };
+      return { success: true, user };
     }
 
     return { success: false, error: 'Email/Username atau Password salah.' };
