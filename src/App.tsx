@@ -8,7 +8,7 @@ import { AdminDashboardView } from './views/AdminDashboardView';
 import { StaffLoginPage } from './views/StaffLoginPage';
 import { StaffHeader } from './components/StaffHeader';
 import { ReceiptModal } from './components/ReceiptModal';
-import { ShieldAlert, BellRing } from 'lucide-react';
+import { ShieldAlert, BellRing, ArrowRightLeft } from 'lucide-react';
 
 type AppRoute = 'customer' | 'admin' | 'pos' | 'kds';
 
@@ -64,6 +64,11 @@ const AppRouter: React.FC = () => {
     setCurrentRoute(route);
   };
 
+  const handleSwitchAccount = () => {
+    logout();
+    // Keep user on the requested route so they can log in with appropriate role
+  };
+
   // 1. Customer Route: Pure Customer Experience (Zero Staff UI)
   if (currentRoute === 'customer') {
     return (
@@ -109,29 +114,37 @@ const AppRouter: React.FC = () => {
   if (isCashier && currentRoute !== 'pos') {
     return (
       <div className="min-h-screen bg-stone-900 text-stone-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-stone-800 border border-rose-500/50 rounded-2xl p-6 text-center shadow-2xl">
+        <div className="max-w-md w-full bg-stone-800 border border-rose-500/50 rounded-3xl p-6 sm:p-8 text-center shadow-2xl">
           <div className="w-16 h-16 rounded-full bg-rose-500/20 text-rose-400 mx-auto flex items-center justify-center mb-4">
             <ShieldAlert className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2">Akses Dilarang (403 Forbidden)</h2>
-          <p className="text-sm text-stone-400 mb-6">
-            Akun Anda terdaftar sebagai <strong className="text-emerald-400">Kasir</strong>. Anda tidak memiliki izin untuk membuka {currentRoute === 'admin' ? 'Dashboard Admin' : 'Layar Dapur'}.
+          <p className="text-xs sm:text-sm text-stone-400 mb-6 leading-relaxed">
+            Anda saat ini sedang login sebagai <strong className="text-emerald-400">Kasir</strong> ({currentUser?.email}). 
+            Portal {currentRoute === 'admin' ? 'Dashboard Admin' : 'Layar Dapur'} hanya dapat diakses oleh staf berwenang.
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             <button
               onClick={() => navigateTo('pos')}
-              className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm transition"
+              className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm transition shadow-lg shadow-emerald-600/30"
             >
               Kembali ke Terminal Kasir POS
+            </button>
+            <button
+              onClick={handleSwitchAccount}
+              className="w-full py-2.5 px-4 bg-stone-700 hover:bg-stone-600 text-stone-200 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 border border-stone-600"
+            >
+              <ArrowRightLeft className="w-4 h-4 text-amber-400" />
+              <span>Ganti Akun & Masuk ke {currentRoute === 'admin' ? 'Portal Admin' : 'Portal Dapur'}</span>
             </button>
             <button
               onClick={() => {
                 logout();
                 navigateTo('customer');
               }}
-              className="w-full py-2 px-4 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium rounded-xl text-xs transition"
+              className="w-full py-2 px-4 text-stone-500 hover:text-stone-300 text-xs transition"
             >
-              Keluar Akun
+              Kembali ke Menu Pelanggan
             </button>
           </div>
         </div>
@@ -143,29 +156,37 @@ const AppRouter: React.FC = () => {
   if (isKitchen && currentRoute !== 'kds') {
     return (
       <div className="min-h-screen bg-stone-900 text-stone-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-stone-800 border border-rose-500/50 rounded-2xl p-6 text-center shadow-2xl">
+        <div className="max-w-md w-full bg-stone-800 border border-rose-500/50 rounded-3xl p-6 sm:p-8 text-center shadow-2xl">
           <div className="w-16 h-16 rounded-full bg-rose-500/20 text-rose-400 mx-auto flex items-center justify-center mb-4">
             <ShieldAlert className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2">Akses Dilarang (403 Forbidden)</h2>
-          <p className="text-sm text-stone-400 mb-6">
-            Akun Anda terdaftar sebagai <strong className="text-amber-400">Tim Dapur</strong>. Anda tidak memiliki izin untuk membuka {currentRoute === 'admin' ? 'Dashboard Admin' : 'Terminal Kasir'}.
+          <p className="text-xs sm:text-sm text-stone-400 mb-6 leading-relaxed">
+            Anda saat ini sedang login sebagai <strong className="text-amber-400">Tim Dapur</strong> ({currentUser?.email}). 
+            Portal {currentRoute === 'admin' ? 'Dashboard Admin' : 'Terminal Kasir'} hanya dapat diakses oleh staf berwenang.
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             <button
               onClick={() => navigateTo('kds')}
-              className="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold rounded-xl text-sm transition"
+              className="w-full py-3 px-4 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold rounded-xl text-xs sm:text-sm transition shadow-lg shadow-amber-600/30"
             >
               Kembali ke Layar Dapur KDS
+            </button>
+            <button
+              onClick={handleSwitchAccount}
+              className="w-full py-2.5 px-4 bg-stone-700 hover:bg-stone-600 text-stone-200 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 border border-stone-600"
+            >
+              <ArrowRightLeft className="w-4 h-4 text-emerald-400" />
+              <span>Ganti Akun & Masuk ke {currentRoute === 'admin' ? 'Portal Admin' : 'Terminal Kasir'}</span>
             </button>
             <button
               onClick={() => {
                 logout();
                 navigateTo('customer');
               }}
-              className="w-full py-2 px-4 bg-stone-700 hover:bg-stone-600 text-stone-300 font-medium rounded-xl text-xs transition"
+              className="w-full py-2 px-4 text-stone-500 hover:text-stone-300 text-xs transition"
             >
-              Keluar Akun
+              Kembali ke Menu Pelanggan
             </button>
           </div>
         </div>

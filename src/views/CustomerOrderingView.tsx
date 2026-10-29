@@ -15,7 +15,8 @@ import {
   Bell, 
   UtensilsCrossed, 
   X,
-  Coffee
+  Coffee,
+  Lock
 } from 'lucide-react';
 
 export const CustomerOrderingView: React.FC = () => {
@@ -273,16 +274,31 @@ export const CustomerOrderingView: React.FC = () => {
         )}
       </div>
 
-      {/* Footer & Staff Portal Access Link */}
+      {/* Footer & Staff Portal Direct Access Links */}
       <footer className="mt-16 text-center text-xs text-stone-400 py-6 border-t border-stone-200">
         <p className="font-semibold text-stone-600">{business.name}</p>
         <p className="text-[11px] text-stone-400 mt-1">{business.address}</p>
-        <div className="mt-4">
+        
+        {/* Direct Links to Staff Portals for Owner/Management Convenience */}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
           <a
             href="#/admin"
-            className="inline-flex items-center gap-1.5 text-[11px] text-stone-400 hover:text-stone-700 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-full transition"
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3.5 py-1.5 rounded-full transition border border-stone-200"
           >
-            <span>🔐 Login Staf & Kasir</span>
+            <Lock className="w-3 h-3 text-stone-500" />
+            <span>Portal Admin & Owner</span>
+          </a>
+          <a
+            href="#/pos"
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-1.5 rounded-full transition border border-emerald-200"
+          >
+            <span>💵 Kasir POS</span>
+          </a>
+          <a
+            href="#/kds"
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-3.5 py-1.5 rounded-full transition border border-amber-200"
+          >
+            <span>🍳 Layar Dapur</span>
           </a>
         </div>
       </footer>

@@ -26,7 +26,7 @@ export const StaffLoginPage: React.FC<Props> = ({
   const validateRoleAccess = (userRole: string): boolean => {
     if (expectedRole === 'admin') {
       if (userRole !== 'admin' && userRole !== 'owner') {
-        setErrorMessage('⛔ Akses Ditolak: Hanya Admin/Owner yang diizinkan masuk ke Dashboard Admin.');
+        setErrorMessage('⛔ Akses Ditolak: Hanya Admin / Pemilik yang diizinkan masuk ke Dashboard Admin.');
         return false;
       }
     } else if (expectedRole === 'pos') {
@@ -56,22 +56,9 @@ export const StaffLoginPage: React.FC<Props> = ({
           onSuccess();
         }
       } else {
-        setErrorMessage(res.error || 'Autentikasi gagal. Periksa email dan password.');
+        setErrorMessage(res.error || 'Email atau password salah. Silakan periksa kembali.');
       }
     }, 250);
-  };
-
-  const handleQuickLogin = (quickEmail: string, quickPass: string) => {
-    setEmail(quickEmail);
-    setPassword(quickPass);
-    const res = login(quickEmail, quickPass);
-    if (res.success && res.user) {
-      if (validateRoleAccess(res.user.role)) {
-        onSuccess();
-      }
-    } else {
-      setErrorMessage(res.error || 'Login gagal.');
-    }
   };
 
   const portalAccent = 
@@ -96,7 +83,7 @@ export const StaffLoginPage: React.FC<Props> = ({
           className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-white transition mb-6 bg-stone-800/80 hover:bg-stone-800 px-3 py-1.5 rounded-lg border border-stone-700/60"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Kembali ke Menu Pelanggan Meja</span>
+          <span>Kembali ke Menu Pelanggan</span>
         </button>
 
         {/* Brand Header */}
@@ -132,13 +119,7 @@ export const StaffLoginPage: React.FC<Props> = ({
                 <input
                   type="text"
                   required
-                  placeholder={
-                    expectedRole === 'pos' 
-                      ? 'kasir@sondoro.com' 
-                      : expectedRole === 'kds' 
-                      ? 'dapur@sondoro.com' 
-                      : 'admin@sondoro.com'
-                  }
+                  placeholder="Masukkan username atau email staf"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-stone-900/80 text-white placeholder-stone-600 text-xs sm:text-sm pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500 transition"
@@ -155,7 +136,7 @@ export const StaffLoginPage: React.FC<Props> = ({
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  placeholder="••••••••"
+                  placeholder="Masukkan password rahasia"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-stone-900/80 text-white placeholder-stone-600 text-xs sm:text-sm pl-10 pr-10 py-2.5 rounded-xl border border-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500 transition"
@@ -180,64 +161,9 @@ export const StaffLoginPage: React.FC<Props> = ({
             </button>
           </form>
 
-          {/* Dedicated Role Login Pill */}
-          <div className="mt-6 pt-5 border-t border-stone-700/80">
-            <p className="text-[11px] font-bold text-stone-400 uppercase tracking-wider text-center mb-3">
-              ⚡ Akun Resmi untuk Portal Ini
-            </p>
-            
-            {expectedRole === 'pos' && (
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('kasir@sondoro.com', 'kasir123')}
-                  className="w-full p-2.5 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/40 text-center transition flex items-center justify-between px-4"
-                >
-                  <div className="text-left">
-                    <p className="text-xs font-bold text-emerald-400">Kasir POS (Utama)</p>
-                    <p className="text-[10px] text-stone-400">kasir@sondoro.com</p>
-                  </div>
-                  <span className="text-xs font-mono font-bold text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded">kasir123</span>
-                </button>
-              </div>
-            )}
-
-            {expectedRole === 'kds' && (
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('dapur@sondoro.com', 'dapur123')}
-                  className="w-full p-2.5 rounded-xl bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 text-center transition flex items-center justify-between px-4"
-                >
-                  <div className="text-left">
-                    <p className="text-xs font-bold text-amber-400">Staf Dapur / Barista</p>
-                    <p className="text-[10px] text-stone-400">dapur@sondoro.com</p>
-                  </div>
-                  <span className="text-xs font-mono font-bold text-amber-300 bg-amber-900/60 px-2 py-0.5 rounded">dapur123</span>
-                </button>
-              </div>
-            )}
-
-            {expectedRole === 'admin' && (
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('admin@sondoro.com', 'admin123')}
-                  className="w-full p-2.5 rounded-xl bg-brand-950/40 hover:bg-brand-900/50 border border-brand-500/40 text-center transition flex items-center justify-between px-4"
-                >
-                  <div className="text-left">
-                    <p className="text-xs font-bold text-brand-400">Administrator & Owner</p>
-                    <p className="text-[10px] text-stone-400">admin@sondoro.com</p>
-                  </div>
-                  <span className="text-xs font-mono font-bold text-brand-300 bg-brand-900/60 px-2 py-0.5 rounded">admin123</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-stone-500">
+          <div className="mt-6 pt-4 border-t border-stone-700/60 flex items-center justify-center gap-1.5 text-[11px] text-stone-500">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Hak Akses Terisolasi — Kasir & Dapur Terpisah Penuh</span>
+            <span>Sistem Otentikasi Terenkripsi & Terisolasi Sesuai Peran</span>
           </div>
 
         </div>
