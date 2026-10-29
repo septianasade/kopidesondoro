@@ -23,5 +23,21 @@ The customer website and staff portals MUST NEVER be mixed into one view:
   - **Dapur**: `dapur@sondoro.com` / `dapur123`
 - A prominent **Keluar / Logout** button must be present in the staff header to lock the portal.
 
-## 4. Cloudflare Pages SPA Routing
-- Must always include `public/_redirects` (`/* /index.html 200`) and support dual hash-routing (`#/admin`) to prevent 404 on refresh.
+## 4. STRICT ZERO CROSS-ROLE BLEED (ROLE QUARANTINE - STRICTLY FORBIDDEN TO CROSS)
+- **Kasir DILARANG KERAS bisa membuka menu Dapur atau Admin!**
+- **Dapur DILARANG KERAS bisa membuka menu Kasir atau Admin!**
+- Di header portal Kasir: HANYA menampilkan identitas Kasir dan tombol Keluar. Sama sekali TIDAK BOLEH ada tombol/navigasi untuk pindah ke Dapur atau Admin.
+- Di header portal Dapur: HANYA menampilkan identitas Dapur dan tombol Keluar. Sama sekali TIDAK BOLEH ada tombol/navigasi untuk pindah ke Kasir atau Admin.
+- Jika pengguna mencoba mengetik URL secara manual (misal Kasir buka `#/kds` atau `#/admin`), sistem WAJIB menampilkan layar blokir **403 Forbidden (Akses Dilarang)** dengan tombol kembali ke portalnya sendiri atau langsung redirect otomatis.
+
+## 5. MANDATORY REAL-TIME CROSS-PORTAL SYNCHRONIZATION (WAJIB SALING SINKRON)
+- Setiap pesanan yang dikirim oleh pelanggan (`CustomerOrderingView`) **WAJIB LANGSUNG MUNCUL** seketika itu juga di portal Kasir (`/pos`) dan portal Dapur (`/kds`).
+- Sistem harus mengimplementasikan:
+  1. `BroadcastChannel` (0ms delay antar-tab browser).
+  2. `window.addEventListener('storage')` (fallback lintas jendela/window).
+  3. Serverless Cloud KV API / WebSocket / Supabase Realtime (lintas perangkat, misal pembeli di HP dan kasir di PC).
+  4. Suara lonceng/chime otomatis (`soundNotifier.playNewOrderChime()`) dan floating banner toast saat ada pesanan baru masuk.
+  5. Perubahan status pengerjaan oleh Dapur (Sedang Dimasak / Siap Disajikan) dan status pembayaran oleh Kasir (Lunas) harus langsung terupdate di layar pelanggan secara real-time.
+
+## 6. Cloudflare Pages SPA Routing
+- Must always include `dist/_redirects` (`/* /index.html 200`) and support dual hash-routing (`#/admin`) to prevent 404 on refresh.
