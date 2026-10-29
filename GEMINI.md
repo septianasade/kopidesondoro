@@ -41,3 +41,8 @@ The customer website and staff portals MUST NEVER be mixed into one view:
 
 ## 6. Cloudflare Pages SPA Routing
 - Must always include `dist/_redirects` (`/* /index.html 200`) and support dual hash-routing (`#/admin`) to prevent 404 on refresh.
+
+
+## 7. Absolute Credential Confidentiality on Auth Screens
+- **DILARANG KERAS** menampilkan password, tombol quick-login, atau kredensial default secara terang-terangan (plaintext) di halaman login aplikasi!
+- Halaman login harus profesional, aman, dan privasi: input password wajib bertipe `password` (tersembunyi `••••••••`) tanpa membocorkan kata sandi akun apa pun ke publik.

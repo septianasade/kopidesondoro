@@ -32,3 +32,8 @@ All staff portals must require username & password. No unauthenticated backdoor 
   3. Serverless Cloud KV API / WebSocket / Realtime (lintas perangkat, misal pembeli di HP dan kasir di PC).
   4. Audio chime (`soundNotifier.playNewOrderChime()`) dan floating banner toast saat ada pesanan baru masuk.
   5. Perubahan status pengerjaan oleh Dapur (Sedang Dimasak / Siap Disajikan) dan status pembayaran oleh Kasir (Lunas) harus langsung terupdate di layar pelanggan secara real-time.
+
+
+## Rule 6: Absolute Credential Confidentiality on Auth Screens
+- **DILARANG KERAS** menampilkan password, tombol quick-login, atau kredensial default secara terang-terangan (plaintext) di halaman login aplikasi!
+- Halaman login harus profesional, aman, dan privasi: input password wajib bertipe `password` (tersembunyi `••••••••`) tanpa membocorkan kata sandi akun apa pun ke publik.
