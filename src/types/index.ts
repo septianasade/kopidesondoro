@@ -1,45 +1,62 @@
-export type UserRole = 'owner' | 'admin' | 'cashier' | 'kitchen' | 'waiter';
+// POS & QR Table Ordering Industry Standard Schema
+
+export type StaffRole = 'ADMIN' | 'CASHIER' | 'KITCHEN';
+export type UserRole = StaffRole | 'admin' | 'cashier' | 'kitchen' | 'owner';
+
+export type OrderFulfillmentStatus = 
+  | 'PENDING_PAYMENT' 
+  | 'IN_KITCHEN' 
+  | 'READY' 
+  | 'COMPLETED' 
+  | 'CANCELLED';
 
 export type FulfillmentStatus = 
-  | 'pending'     // Pesanan baru masuk
-  | 'confirmed'   // Dikonfirmasi kasir
-  | 'preparing'   // Sedang dibuat dapur
-  | 'ready'       // Siap disajikan
-  | 'served'      // Sudah diantar ke meja
-  | 'completed'   // Selesai (sudah bayar & disajikan)
-  | 'cancelled';  // Dibatalkan
-
-export type PaymentStatus = 
-  | 'unpaid' 
+  | OrderFulfillmentStatus 
   | 'pending' 
-  | 'paid' 
-  | 'refunded';
+  | 'confirmed'
+  | 'preparing' 
+  | 'ready' 
+  | 'served' 
+  | 'completed'
+  | 'cancelled';
 
-export type TableStatus = 'available' | 'occupied' | 'cleaning' | 'reserved';
+export type OrderPaymentStatus = 'UNPAID' | 'PAID' | 'REFUNDED' | 'unpaid' | 'paid';
 
-export interface Business {
+export type TableOperationalStatus = 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'available' | 'occupied' | 'reserved';
+
+export type ShiftStatus = 'OPEN' | 'CLOSED' | 'open' | 'closed';
+
+export interface User {
   id: string;
   name: string;
-  slug: string;
-  logo_url?: string;
-  address: string;
-  phone: string;
-  currency: string;
-  tax_rate: number;      // e.g. 11%
-  service_rate: number;  // e.g. 5%
-  open_time: string;
-  close_time: string;
+  email: string | null;            // Nullable for PIN-only staff
+  password_hash: string | null;    // Nullable for PIN-only staff
+  pin_code: string;                // 6-digit unique PIN
+  role: StaffRole;
   is_active: boolean;
+  created_at?: string;
 }
 
-export interface Profile {
+export interface Shift {
   id: string;
-  business_id: string;
-  email: string;
-  full_name: string;
-  role: UserRole;
-  avatar_url?: string;
+  business_id?: string;
+  cashier_id: string;
+  cashier_name: string;
+  start_time?: string;
+  opened_at?: string;
+  end_time?: string | null;
+  closed_at?: string | null;
+  starting_cash?: number;
+  start_cash?: number;
+  ending_cash?: number | null;
+  actual_cash?: number | null;
+  expected_cash: number;
+  difference?: number | null;
+  status: ShiftStatus;
+  notes?: string;
 }
+
+export type ShiftRecord = Shift;
 
 export interface TableItem {
   id: string;
@@ -48,7 +65,7 @@ export interface TableItem {
   table_label: string;
   capacity: number;
   qr_token: string;
-  status: TableStatus;
+  status: TableOperationalStatus;
   is_active: boolean;
 }
 
@@ -142,8 +159,12 @@ export interface Order {
   access_token: string;
   customer_name: string;
   customer_notes?: string;
-  fulfillment_status: FulfillmentStatus;
-  payment_status: PaymentStatus;
+  cashier_id?: string | null;
+  cashier_name?: string | null;
+  status?: OrderFulfillmentStatus;
+  fulfillment_status?: FulfillmentStatus;
+  payment_status: OrderPaymentStatus;
+  payment_method?: 'CASH' | 'QRIS' | 'TRANSFER' | 'CARD' | 'cash' | 'qris' | 'transfer' | 'card';
   subtotal: number;
   discount_amount: number;
   tax_amount: number;
@@ -158,7 +179,7 @@ export interface PaymentRecord {
   id: string;
   business_id: string;
   order_id: string;
-  payment_method: 'cash' | 'qris' | 'transfer' | 'card';
+  payment_method: 'CASH' | 'QRIS' | 'TRANSFER' | 'CARD' | 'cash' | 'qris' | 'transfer' | 'card';
   total_bill: number;
   amount_received: number;
   change_given: number;
@@ -167,17 +188,17 @@ export interface PaymentRecord {
   created_at: string;
 }
 
-export interface ShiftRecord {
+export interface Business {
   id: string;
-  business_id: string;
-  cashier_id: string;
-  cashier_name: string;
-  start_cash: number;
-  expected_cash: number;
-  actual_cash?: number;
-  difference?: number;
-  status: 'open' | 'closed';
-  notes?: string;
-  opened_at: string;
-  closed_at?: string;
+  name: string;
+  slug: string;
+  logo_url?: string;
+  address: string;
+  phone: string;
+  currency: string;
+  tax_rate: number;
+  service_rate: number;
+  open_time: string;
+  close_time: string;
+  is_active: boolean;
 }

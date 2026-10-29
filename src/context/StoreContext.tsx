@@ -33,12 +33,11 @@ const initialBusiness: Business = {
 };
 
 const initialTables: TableItem[] = [
-  { id: 'tbl_1', business_id: 'biz_sondoro_01', table_number: '01', table_label: 'Meja 01 (Indoor)', capacity: 2, qr_token: 'sndr-m01-a8f2', status: 'occupied', is_active: true },
-  { id: 'tbl_2', business_id: 'biz_sondoro_01', table_number: '02', table_label: 'Meja 02 (Indoor Window)', capacity: 4, qr_token: 'sndr-m02-c9d3', status: 'occupied', is_active: true },
-  { id: 'tbl_3', business_id: 'biz_sondoro_01', table_number: '03', table_label: 'Meja 03 (Sofa Corner)', capacity: 4, qr_token: 'sndr-m03-b7e1', status: 'occupied', is_active: true },
-  { id: 'tbl_4', business_id: 'biz_sondoro_01', table_number: '04', table_label: 'Meja 04 (Indoor Large)', capacity: 6, qr_token: 'sndr-m04-k4j9', status: 'available', is_active: true },
-  { id: 'tbl_5', business_id: 'biz_sondoro_01', table_number: '05', table_label: 'Meja 05 (Outdoor Garden)', capacity: 4, qr_token: 'sndr-m05-p2w8', status: 'available', is_active: true },
-  { id: 'tbl_6', business_id: 'biz_sondoro_01', table_number: '06', table_label: 'Meja 06 (Outdoor Gazebo)', capacity: 8, qr_token: 'sndr-m06-x7q5', status: 'available', is_active: true },
+  { id: 'tbl_1', business_id: 'biz_sondoro_01', table_number: '01', table_label: 'Meja 01 (Indoor Main)', capacity: 2, qr_token: 'MEJA01', status: 'occupied', is_active: true },
+  { id: 'tbl_2', business_id: 'biz_sondoro_01', table_number: '02', table_label: 'Meja 02 (Window Booth)', capacity: 4, qr_token: 'MEJA02', status: 'occupied', is_active: true },
+  { id: 'tbl_3', business_id: 'biz_sondoro_01', table_number: '03', table_label: 'Meja 03 (Sofa Corner)', capacity: 4, qr_token: 'MEJA03', status: 'occupied', is_active: true },
+  { id: 'tbl_4', business_id: 'biz_sondoro_01', table_number: '04', table_label: 'Meja 04 (Indoor Large)', capacity: 6, qr_token: 'MEJA04', status: 'available', is_active: true },
+  { id: 'tbl_5', business_id: 'biz_sondoro_01', table_number: '05', table_label: 'Meja 05 (Outdoor Garden)', capacity: 4, qr_token: 'MEJA05', status: 'available', is_active: true },
 ];
 
 const initialCategories: Category[] = [

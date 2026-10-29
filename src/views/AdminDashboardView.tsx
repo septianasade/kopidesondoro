@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Product, TableItem } from '../types';
 import { QRModal } from '../components/QRModal';
+import { AdminStaffManagementView } from './AdminStaffManagementView';
 import { 
   TrendingUp, 
   Receipt, 
@@ -13,7 +14,10 @@ import {
   Trash2, 
   Settings, 
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Users,
+  Store,
+  ExternalLink
 } from 'lucide-react';
 
 export const AdminDashboardView: React.FC = () => {
@@ -33,7 +37,7 @@ export const AdminDashboardView: React.FC = () => {
     showReceiptForOrder
   } = useStore();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'tables' | 'menu' | 'reports' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'tables' | 'menu' | 'reports' | 'settings' | 'staff'>('overview');
   const [selectedQRTable, setSelectedQRTable] = useState<TableItem | null>(null);
 
   // Menu Form Modal
@@ -168,6 +172,16 @@ export const AdminDashboardView: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setActiveTab('staff')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+              activeTab === 'staff' ? 'bg-[#121212] text-[#CCFF00] border border-[#CCFF00] shadow' : 'text-stone-600 hover:bg-stone-100'
+            }`}
+          >
+            <Users className="w-4 h-4 text-[#CCFF00]" />
+            <span>Manajemen Staf</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('settings')}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
               activeTab === 'settings' ? 'bg-brand-600 text-white shadow' : 'text-stone-600 hover:bg-stone-100'
@@ -175,6 +189,31 @@ export const AdminDashboardView: React.FC = () => {
           >
             <Settings className="w-4 h-4" />
             <span>Pengaturan</span>
+          </button>
+        </div>
+
+        {/* Supervisor Quick Test Buttons */}
+        <div className="flex items-center gap-2 py-2">
+          <button
+            type="button"
+            onClick={() => { window.location.hash = '#/pos'; }}
+            className="px-3 py-1 bg-stone-900 hover:bg-black text-[#CCFF00] border border-[#CCFF00]/60 text-xs font-bold rounded-lg flex items-center gap-1.5 transition"
+            title="Buka tampilan kasir POS untuk supervisi"
+          >
+            <Store className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Layar Kasir</span>
+            <ExternalLink className="w-3 h-3 opacity-70" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { window.location.hash = '#/kitchen'; }}
+            className="px-3 py-1 bg-stone-900 hover:bg-black text-amber-400 border border-amber-500/60 text-xs font-bold rounded-lg flex items-center gap-1.5 transition"
+            title="Buka tampilan dapur KDS untuk supervisi"
+          >
+            <Utensils className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Layar Dapur</span>
+            <ExternalLink className="w-3 h-3 opacity-70" />
           </button>
         </div>
       </div>
@@ -578,6 +617,14 @@ export const AdminDashboardView: React.FC = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {/* 6. STAFF MANAGEMENT TAB */}
+        {activeTab === 'staff' && (
+          <AdminStaffManagementView
+            onOpenPos={() => { window.location.hash = '#/pos'; }}
+            onOpenKitchen={() => { window.location.hash = '#/kitchen'; }}
+          />
         )}
 
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
+import { useAuth } from '../context/AuthContext';
 import { soundNotifier } from '../utils/audio';
 import { 
   ChefHat, 
@@ -10,11 +11,13 @@ import {
   Flame, 
   Bell, 
   CheckCheck,
-  History
+  History,
+  Lock
 } from 'lucide-react';
 
 export const KitchenDisplayView: React.FC = () => {
   const { orders, updateOrderStatus } = useStore();
+  const { lockTerminal } = useAuth();
   const [filterStation, setFilterStation] = useState<'active' | 'pending' | 'preparing' | 'ready' | 'completed'>('active');
   const [isMuted, setIsMuted] = useState(false);
   const [nowTime, setNowTime] = useState(Date.now());
@@ -178,6 +181,18 @@ export const KitchenDisplayView: React.FC = () => {
             title={isMuted ? 'Suara Senyap' : 'Suara Aktif'}
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+          </button>
+
+          <button
+            onClick={() => {
+              lockTerminal();
+              window.location.hash = '#/terminal-login';
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#121212] hover:bg-black text-[#CCFF00] border-2 border-[#CCFF00] text-xs font-bold font-mono transition shadow-sm cursor-pointer ml-1"
+            title="Kunci layar dapur dan kembali ke PIN pad"
+          >
+            <Lock className="w-3.5 h-3.5" />
+            <span>Kunci Layar (Lock PIN)</span>
           </button>
         </div>
 

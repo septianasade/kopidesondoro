@@ -6,7 +6,23 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Space Grotesk"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+        display: ['"Space Grotesk"', 'sans-serif'],
+      },
       colors: {
+        tactile: {
+          bg: '#F4F1EA',
+          carbon: '#121212',
+          metal: '#1E1E1E',
+          surface: '#FFFFFF',
+          border: '#000000',
+          acid: '#CCFF00',      // Acid Green
+          orange: '#FF4F00',    // International Orange
+          signal: '#FF2A00',    // Signal Red
+          muted: '#8A857A',
+        },
         brand: {
           50: '#fbf7ee',
           100: '#f5ecd6',
@@ -21,6 +37,13 @@ export default {
           950: '#3c1c0c',
         },
       },
+      boxShadow: {
+        'tactile-sm': '2px 2px 0px #000000',
+        'tactile': '3px 3px 0px #000000',
+        'tactile-lg': '5px 5px 0px #000000',
+        'tactile-orange': '3px 3px 0px #FF4F00',
+        'tactile-acid': '3px 3px 0px #CCFF00',
+      }
     },
   },
   plugins: [],

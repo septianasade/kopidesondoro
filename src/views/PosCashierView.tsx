@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
+import { useAuth } from '../context/AuthContext';
 import { Order, CartItem } from '../types';
 import { 
   CreditCard, 
@@ -12,10 +13,12 @@ import {
   Plus, 
   X, 
   Store,
-  CheckCircle2
+  CheckCircle2,
+  Lock
 } from 'lucide-react';
 
 export const PosCashierView: React.FC = () => {
+  const { currentUser, lockTerminal } = useAuth();
   const { 
     orders, 
     tables, 
@@ -50,6 +53,13 @@ export const PosCashierView: React.FC = () => {
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [inputStartCash, setInputStartCash] = useState('500000');
   const [inputActualCash, setInputActualCash] = useState('');
+
+  // Auto-prompt Buka Shift if no open shift
+  useEffect(() => {
+    if (!currentShift || currentShift.status !== 'open') {
+      setIsShiftModalOpen(true);
+    }
+  }, [currentShift]);
 
   // Filtered orders
   const filteredOrders = orders.filter((o) => {
@@ -122,14 +132,20 @@ export const PosCashierView: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-bold text-stone-900 uppercase tracking-wider">Terminal Kasir POS</span>
+            <span className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+              Terminal Kasir POS
+            </span>
+          </div>
+          <span className="text-stone-300">|</span>
+          <div className="text-xs text-stone-600">
+            Kasir: <strong className="text-stone-900 font-bold">{currentUser?.name || 'Budi Kasir'}</strong>
           </div>
           <span className="text-stone-300">|</span>
           <div className="text-xs text-stone-600">
             Shift: <strong className={currentShift?.status === 'open' ? 'text-emerald-700 font-extrabold' : 'text-stone-500'}>
               {currentShift?.status === 'open' ? '🟢 Shift Aktif' : '🔴 Shift Ditutup'}
             </strong>{' '}
-            (Modal: Rp {currentShift?.start_cash.toLocaleString('id-ID') || 0})
+            (Modal: Rp {(currentShift?.start_cash ?? currentShift?.starting_cash ?? 0).toLocaleString('id-ID')})
           </div>
         </div>
 
@@ -139,7 +155,7 @@ export const PosCashierView: React.FC = () => {
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            <span>Pesan Manual di Kasir</span>
+            <span>Pesan Manual</span>
           </button>
 
           <button
@@ -151,7 +167,19 @@ export const PosCashierView: React.FC = () => {
             }`}
           >
             <Store className="w-3.5 h-3.5" />
-            <span>{currentShift?.status === 'open' ? 'Tutup Shift Kasir' : 'Buka Shift Baru'}</span>
+            <span>{currentShift?.status === 'open' ? 'Tutup Shift' : 'Buka Shift'}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              lockTerminal();
+              window.location.hash = '#/terminal-login';
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#121212] hover:bg-black text-[#CCFF00] border-2 border-[#CCFF00] text-xs font-bold font-mono transition shadow-sm cursor-pointer ml-1"
+            title="Kunci sesi kasir dan kembali ke input PIN terminal"
+          >
+            <Lock className="w-3.5 h-3.5" />
+            <span>Ganti Kasir / Lock Screen</span>
           </button>
         </div>
       </div>
@@ -610,13 +638,13 @@ export const PosCashierView: React.FC = () => {
                   <div className="flex justify-between text-stone-600">
                     <span>Modal Awal Kasir:</span>
                     <strong className="font-mono font-bold text-stone-900">
-                      Rp {currentShift.start_cash.toLocaleString('id-ID')}
+                      Rp {(currentShift.start_cash ?? currentShift.starting_cash ?? 0).toLocaleString('id-ID')}
                     </strong>
                   </div>
                   <div className="flex justify-between text-stone-600">
                     <span>Penjualan Tunai Masuk:</span>
                     <strong className="font-mono font-bold text-emerald-700">
-                      + Rp {Math.max(0, currentShift.expected_cash - currentShift.start_cash).toLocaleString('id-ID')}
+                      + Rp {Math.max(0, currentShift.expected_cash - (currentShift.start_cash ?? currentShift.starting_cash ?? 0)).toLocaleString('id-ID')}
                     </strong>
                   </div>
                   <div className="pt-2 border-t border-stone-200 flex justify-between text-stone-900 font-extrabold text-sm">
@@ -728,7 +756,7 @@ export const PosCashierView: React.FC = () => {
                 <button
                   onClick={() => {
                     const finalModal = parseDigits(inputStartCash) || 500000;
-                    openShift(finalModal, 'Kasir Utama');
+                    openShift(finalModal, currentUser?.name || 'Budi Kasir');
                     setIsShiftModalOpen(false);
                   }}
                   className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-md transition"

@@ -19,9 +19,10 @@ export const StaffHeader: React.FC<Props> = ({ currentPortal, onNavigate, onExit
   const { currentUser, logout } = useAuth();
   const { business, orders } = useStore();
 
-  const isCashier = currentUser?.role === 'cashier';
-  const isKitchen = currentUser?.role === 'kitchen';
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'owner';
+  const roleUpper = (currentUser?.role || '').toUpperCase();
+  const isCashier = roleUpper === 'CASHIER';
+  const isKitchen = roleUpper === 'KITCHEN';
+  const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'OWNER';
 
   const kitchenPending = orders.filter(
     (o) => o.fulfillment_status === 'pending' || o.fulfillment_status === 'confirmed' || o.fulfillment_status === 'preparing'
@@ -36,10 +37,10 @@ export const StaffHeader: React.FC<Props> = ({ currentPortal, onNavigate, onExit
 
   const portalBadge = 
     isCashier 
-      ? { text: 'TERMINAL KASIR POS', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' }
+      ? { text: 'TERMINAL KASIR POS', color: 'bg-[#233519] text-[#CCFF00] border-[#CCFF00]' }
       : isKitchen
-      ? { text: 'KITCHEN DISPLAY (KDS)', color: 'bg-amber-500/20 text-amber-300 border-amber-500/40' }
-      : { text: 'OWNER & ADMIN', color: 'bg-brand-500/20 text-brand-300 border-brand-500/40' };
+      ? { text: 'KITCHEN DISPLAY (KDS)', color: 'bg-[#3a2512] text-[#FF9900] border-[#FF9900]' }
+      : { text: 'ADMIN BACK-OFFICE', color: 'bg-stone-900 text-[#FF4F00] border-[#FF4F00]' };
 
   return (
     <header className="sticky top-0 z-40 bg-stone-900 text-stone-100 shadow-md border-b border-stone-800">
@@ -59,7 +60,7 @@ export const StaffHeader: React.FC<Props> = ({ currentPortal, onNavigate, onExit
                 </span>
               </div>
               <p className="text-xs text-stone-400 hidden sm:block">
-                Login: <strong className="text-stone-200">{currentUser?.name}</strong> ({currentUser?.email})
+                Login: <strong className="text-stone-200">{currentUser?.name}</strong> ({currentUser?.email || 'PIN Terverifikasi'})
               </p>
             </div>
           </div>
